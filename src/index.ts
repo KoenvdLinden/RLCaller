@@ -57,6 +57,10 @@ const runCommand = (command: string, args: string[], voiceConnection: VoiceConne
 
         msg.reply(commandListMessage);
     }
+
+    if (command === 'contribute') {
+        msg.reply('https://github.com/KoenvdLinden/RLCaller');
+    }
 };
 
 client.on("message", msg => {
