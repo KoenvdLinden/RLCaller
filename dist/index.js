@@ -26,34 +26,41 @@ let commandDefinitions = {
     tingjong: './sound/tingjong.mp3',
     wednesday: './sound/wednesday.mp3',
     yodeling: './sound/yodeling.mp3',
+    yeahboyyy: './sound/yeahboyyy.mp3',
+    godsplan: './sound/godsplan.mp3',
+    run: './sound/run.mp3',
+    jurassicpark: './sound/jurassicpark.mp3',
+    wasted: './sound/wasted.mp3',
+    illuminati: './sound/illuminati.mp3',
 };
 const runCommand = (command, args, voiceConnection, msg) => {
     if (commandDefinitions[command]) {
         const volume = args[0] ? parseInt(args[0]) : 100;
-        const stream = fs_1.createReadStream(commandDefinitions[command]);
-        stream.once('open', () => {
-            const dispatcher = msg.guild.voiceConnection.playStream(stream, {
-                volume: volume / 100
+        try {
+            const stream = fs_1.createReadStream(commandDefinitions[command]);
+            stream.once('open', () => {
+                const dispatcher = msg.guild.voiceConnection.playStream(stream, {
+                    volume: volume / 100
+                });
+                dispatcher.on('end', () => {
+                    stream.close();
+                    msg.member.voiceChannel.leave();
+                });
             });
-            dispatcher.on('end', () => {
-                stream.close();
-                msg.member.voiceChannel.leave();
-            });
-        });
-    }
-    if (command === 'disconnect') {
-        voiceConnection.disconnect();
+        }
+        catch (error) {
+            console.log(error);
+        }
+        return;
     }
     if (command === 'help') {
-        let commandListMessage = '';
-        Object.keys(commandDefinitions).forEach(value => {
-            commandListMessage += `${value}\n`;
-        });
+        let commandListMessage = Object.keys(commandDefinitions).join(', ');
         msg.reply(commandListMessage);
     }
     if (command === 'contribute') {
         msg.reply('https://github.com/KoenvdLinden/RLCaller');
     }
+    voiceConnection.disconnect();
 };
 client.on("message", msg => {
     if (msg.author.bot) {
@@ -67,7 +74,6 @@ client.on("message", msg => {
         return;
     }
     if (msg.guild.voiceConnection) {
-        msg.guild.voiceConnection.disconnect();
         return;
     }
     const command = msg.content.split(" ")[0].replace(ConfigFile.config.prefix, "");
