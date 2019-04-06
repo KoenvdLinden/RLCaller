@@ -14,8 +14,11 @@ let commandDefinitions = {
     estate: './sound/estate.mp3',
     gay: './sound/gay.mp3',
     goat: './sound/goat.mp3',
+    godsplan: './sound/godsplan.mp3',
+    illuminati: './sound/illuminati.mp3',
     iloveyou: './sound/iloveyou.mp3',
     jstn: './sound/jstn.mp3',
+    jurassicpark: './sound/jurassicpark.mp3',
     KRAKAKA: './sound/KRAKAKA.mp3',
     milk: './sound/milk.mp3',
     noice: './sound/noice.mp3',
@@ -23,15 +26,19 @@ let commandDefinitions = {
     oof: './sound/oof.mp3',
     pewdiepie: './sound/pewdepie.mp3',
     racist: './sound/racist.mp3',
+    run: './sound/run.mp3',
     slap: './sound/slap.mp3',
     tingjong: './sound/tingjong.mp3',
+    wasted: './sound/wasted.mp3',
     wednesday: './sound/wednesday.mp3',
+    yeahboyyy: './sound/yeahboyyy.mp3',
     yodeling: './sound/yodeling.mp3',
 };
 
 const runCommand = (command: string, args: string[], voiceConnection: VoiceConnection, msg: Message) => {
     if (commandDefinitions[command]) {
         const volume = args[0] ? parseInt(args[0]) : 100;
+
         const stream = createReadStream(commandDefinitions[command]);
 
         stream.once('open', () => {
@@ -43,24 +50,20 @@ const runCommand = (command: string, args: string[], voiceConnection: VoiceConne
                 msg.member.voiceChannel.leave();
             });
         });
-    }
-
-    if (command === 'disconnect') {
-        voiceConnection.disconnect();
+        
+        return;
     }
 
     if (command === 'help') {
-        let commandListMessage = '';
-        Object.keys(commandDefinitions).forEach(value => {
-            commandListMessage += `${value}\n`;
-        });
-
+        let commandListMessage = Object.keys(commandDefinitions).join(', ');
         msg.reply(commandListMessage);
     }
 
     if (command === 'contribute') {
         msg.reply('https://github.com/KoenvdLinden/RLCaller');
     }
+
+    voiceConnection.disconnect();
 };
 
 client.on("message", msg => {
@@ -79,8 +82,6 @@ client.on("message", msg => {
     }
 
     if (msg.guild.voiceConnection) {
-        msg.guild.voiceConnection.disconnect();
-
         return;
     }
 
