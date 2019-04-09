@@ -1,6 +1,6 @@
-import auth from "../auth.json";
+import * as auth from "../auth.json";
 
 export let config = {
-    "token": auth.token,
+    "token": (<any>auth).token,
     "prefix": "?",
 };
