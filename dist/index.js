@@ -13,8 +13,11 @@ let commandDefinitions = {
     estate: './sound/estate.mp3',
     gay: './sound/gay.mp3',
     goat: './sound/goat.mp3',
+    godsplan: './sound/godsplan.mp3',
+    illuminati: './sound/illuminati.mp3',
     iloveyou: './sound/iloveyou.mp3',
     jstn: './sound/jstn.mp3',
+    jurassicpark: './sound/jurassicpark.mp3',
     KRAKAKA: './sound/KRAKAKA.mp3',
     milk: './sound/milk.mp3',
     noice: './sound/noice.mp3',
@@ -22,35 +25,27 @@ let commandDefinitions = {
     oof: './sound/oof.mp3',
     pewdiepie: './sound/pewdepie.mp3',
     racist: './sound/racist.mp3',
+    run: './sound/run.mp3',
     slap: './sound/slap.mp3',
     tingjong: './sound/tingjong.mp3',
-    wednesday: './sound/wednesday.mp3',
-    yodeling: './sound/yodeling.mp3',
-    yeahboyyy: './sound/yeahboyyy.mp3',
-    godsplan: './sound/godsplan.mp3',
-    run: './sound/run.mp3',
-    jurassicpark: './sound/jurassicpark.mp3',
     wasted: './sound/wasted.mp3',
-    illuminati: './sound/illuminati.mp3',
+    wednesday: './sound/wednesday.mp3',
+    yeahboyyy: './sound/yeahboyyy.mp3',
+    yodeling: './sound/yodeling.mp3',
 };
 const runCommand = (command, args, voiceConnection, msg) => {
     if (commandDefinitions[command]) {
         const volume = args[0] ? parseInt(args[0]) : 100;
-        try {
-            const stream = fs_1.createReadStream(commandDefinitions[command]);
-            stream.once('open', () => {
-                const dispatcher = msg.guild.voiceConnection.playStream(stream, {
-                    volume: volume / 100
-                });
-                dispatcher.on('end', () => {
-                    stream.close();
-                    msg.member.voiceChannel.leave();
-                });
+        const stream = fs_1.createReadStream(commandDefinitions[command]);
+        stream.once('open', () => {
+            const dispatcher = msg.guild.voiceConnection.playStream(stream, {
+                volume: volume / 100
             });
-        }
-        catch (error) {
-            console.log(error);
-        }
+            dispatcher.on('end', () => {
+                stream.close();
+                msg.member.voiceChannel.leave();
+            });
+        });
         return;
     }
     if (command === 'help') {
