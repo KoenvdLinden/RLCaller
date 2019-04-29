@@ -6,7 +6,6 @@ const fs_1 = require("fs");
 const client = new Discord.Client();
 let commandDefinitions = {
     ah: './sound/ah.mp3',
-    anotherone: './sound/anotherone.mp3',
     bitconnect: './sound/bitconnect.mp3',
     credits: './sound/credits.mp3',
     deeznuts: './sound/deeznuts.mp3',
