@@ -1,17 +1,21 @@
 import * as Discord from "discord.js";
-import {Message, VoiceConnection} from "discord.js";
+import {Message, VoiceConnection, VoiceChannel, StreamDispatcher} from "discord.js";
 import * as ConfigFile from "./config";
 import {createReadStream} from "fs";
 
 const client: Discord.Client = new Discord.Client();
 
-let commandDefinitions = {
+let commandDefinitions:{
+    [command:string]: string
+} = {
     ah: './sound/ah.mp3',
     bitconnect: './sound/bitconnect.mp3',
     credits: './sound/credits.mp3',
+    deeznuts: './sound/deeznuts.mp3',
     disgustang: './sound/disgustang.mp3',
     epicusaveuu: './sound/epicu-saveuu.mp3',
     estate: './sound/estate.mp3',
+    eternetylater: './sound/eternetylater.mp3',
     gay: './sound/gay.mp3',
     goat: './sound/goat.mp3',
     godsplan: './sound/godsplan.mp3',
@@ -20,6 +24,7 @@ let commandDefinitions = {
     jstn: './sound/jstn.mp3',
     jurassicpark: './sound/jurassicpark.mp3',
     KRAKAKA: './sound/KRAKAKA.mp3',
+    legitness: './sound/legitness.mp3',
     milk: './sound/milk.mp3',
     noice: './sound/noice.mp3',
     ohohoh: './sound/ohohoh.mp3',
@@ -33,25 +38,61 @@ let commandDefinitions = {
     wednesday: './sound/wednesday.mp3',
     yeahboyyy: './sound/yeahboyyy.mp3',
     yodeling: './sound/yodeling.mp3',
+    consequences: './sound/consequences.mp3',
 };
 
+const disconnectTimeoutTime = 120000;
+const defaultVolume = 100;
+
+const disconnectTimeout: {
+    [id:string]: NodeJS.Timeout 
+} = {};
+
+const dispatcher: {
+    [id:string]: StreamDispatcher
+} = {};
+
+const resetTimeout = (voiceChannel: VoiceChannel) => {
+    if (disconnectTimeout[voiceChannel.guild.id] !== null) {
+        clearTimeout(disconnectTimeout[voiceChannel.guild.id]);
+    }
+
+    disconnectTimeout[voiceChannel.guild.id] = setTimeout(() => {
+        voiceChannel.leave();
+    }, disconnectTimeoutTime);
+}
+
+const randomCommand: () => string = () => {
+    return Object.keys(commandDefinitions)[Math.floor(Math.random() * Object.keys(commandDefinitions).length)];
+}
+
 const runCommand = (command: string, args: string[], voiceConnection: VoiceConnection, msg: Message) => {
+    resetTimeout(voiceConnection.channel);
+
     if (commandDefinitions[command]) {
-        const volume = args[0] ? parseInt(args[0]) : 100;
+        const volume = args[0] ? parseInt(args[0]) : defaultVolume;
 
         const stream = createReadStream(commandDefinitions[command]);
 
         stream.once('open', () => {
-            const dispatcher = msg.guild.voiceConnection.playStream(stream, {
+            if (dispatcher[msg.guild.id]) {
+                dispatcher[msg.guild.id].end();
+            }
+
+            dispatcher[msg.guild.id] = msg.guild.voiceConnection.playStream(stream, {
                 volume: volume / 100
             });
-            dispatcher.on('end', () => {
+            dispatcher[msg.guild.id].on('end', () => {
                 stream.close();
-                msg.member.voiceChannel.leave();
             });
         });
         
         return;
+    }
+
+    if (command === 'disconnect') {
+        voiceConnection.channel.leave();
+        disconnectTimeout[voiceConnection.channel.guild.id] = null;
     }
 
     if (command === 'help') {
@@ -62,8 +103,6 @@ const runCommand = (command: string, args: string[], voiceConnection: VoiceConne
     if (command === 'contribute') {
         msg.reply('https://github.com/KoenvdLinden/RLCaller');
     }
-
-    voiceConnection.disconnect();
 };
 
 client.on("message", msg => {
@@ -80,13 +119,20 @@ client.on("message", msg => {
 
         return;
     }
+    
 
-    if (msg.guild.voiceConnection) {
-        return;
+    let command = msg.content.split(" ")[0].replace(ConfigFile.config.prefix, "");
+    const args = msg.content.split(" ").slice(1);
+
+    if (command === 'random') {
+        command = randomCommand();
     }
 
-    const command = msg.content.split(" ")[0].replace(ConfigFile.config.prefix, "");
-    const args = msg.content.split(" ").slice(1);
+    if (msg.guild.voiceConnection) {
+        runCommand(command, args, msg.guild.voiceConnection, msg);
+
+        return;
+    }
 
     msg.member.voiceChannel.join()
         .then((voiceConnection) => {
