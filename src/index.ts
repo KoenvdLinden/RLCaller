@@ -39,6 +39,7 @@ let commandDefinitions:{
     yeahboyyy: './sound/yeahboyyy.mp3',
     yodeling: './sound/yodeling.mp3',
     consequences: './sound/consequences.mp3',
+    rikketik: './sound/riktik.mp3',
 };
 
 const disconnectTimeoutTime = 120000;
